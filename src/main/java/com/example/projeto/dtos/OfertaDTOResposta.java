@@ -28,7 +28,9 @@ public class OfertaDTOResposta implements Serializable{
 
     private String nomeUsuario;
 
-    private ImovelDTOResposta imovelDTOResposta; 
+    private ImovelDTOResposta imovelDTOResposta;
+    
+    private DescontoDTO descontoDTO;
 
     
 

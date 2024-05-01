@@ -13,10 +13,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.projeto.dtos.DTOImovelSuper;
+import com.example.projeto.dtos.DescontoDTO;
 import com.example.projeto.dtos.ImovelDTO;
 import com.example.projeto.dtos.ImovelDTOResposta;
+import com.example.projeto.dtos.OfertaDTOResposta;
+import com.example.projeto.models.DescontoModel;
 import com.example.projeto.models.ImovelModel;
+import com.example.projeto.models.OfertaModel;
+import com.example.projeto.service.DescontoService;
 import com.example.projeto.service.ImovelService;
+import com.example.projeto.service.OfertaService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -25,6 +32,12 @@ public class ImovelController {
 
 	@Autowired
 	private ImovelService service;
+
+	@Autowired
+	private DescontoService descontoService;
+
+	@Autowired
+	private OfertaService ofertaService;
 
 	// @RequestMapping(method = RequestMethod.GET)
 	// public ResponseEntity<List<ImovelModel>> getAll() {
@@ -60,6 +73,33 @@ public class ImovelController {
 	// HttpStatus.CREATED);
 	// }
 
+	@RequestMapping(value = "/descontos", method = RequestMethod.GET)
+	public ResponseEntity<List<DTOImovelSuper>> getDescontos() {
+		List<DescontoModel> descontos = descontoService.getAllValidDescontos();
+		// List<OfertaDTOResposta> ofertas = descontos.stream()
+		// .map(desconto -> new OfertaDTOResposta(desconto.getOferta()))
+		// .collect(Collectors.toList());
+		// List<ImovelDTOResposta> imoveis = ofertas.stream().map(oferta ->
+		// oferta.getImovelDTOResposta())
+		// .collect(Collectors.toList());
+		List<ImovelDTOResposta> imoveis = descontos.stream()
+				.map(desconto -> ImovelDTOResposta.transformaEmDTO(desconto.getOferta().getImovelModel()))
+				.collect(Collectors.toList());
+
+		imoveis.forEach(imovel -> {
+			imovel.setOfertas(descontos.stream()
+					.filter(desconto -> desconto.getOferta().getImovelModel().getId() == imovel.getId())
+					.map(desconto -> desconto.getOferta()).collect(Collectors.toList()));
+		});
+		List<DTOImovelSuper> imoveisSuper = imoveis.stream().map(imovel -> DTOImovelSuper.DTOemNovoDTO(imovel))
+				.collect(Collectors.toList());
+		return ResponseEntity.status(HttpStatus.OK).body(imoveisSuper);
+		// return ResponseEntity.status(HttpStatus.OK)
+		// .body(descontos.stream().map(desconto ->
+		// desconto.getOferta().getImovelModel())
+		// .collect(Collectors.toList()));
+	}
+
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<ImovelDTOResposta> insert(
 			@RequestParam("descricao") String descricao,
@@ -77,15 +117,12 @@ public class ImovelController {
 		ImovelModel imovel = service.transformaParaObjeto(imovelDTO);
 
 		// if (!imovel.getUserModel().isAdmin()) {
-		// 	throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+		// throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		// }
-
 
 		String urlImagem = service.uploadImagem(imagem);
 
 		imovel.setImagem(urlImagem);
-
-
 
 		service.insert(imovel);
 

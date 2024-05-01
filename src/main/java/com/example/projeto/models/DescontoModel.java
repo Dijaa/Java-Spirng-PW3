@@ -3,9 +3,10 @@ package com.example.projeto.models;
 import java.io.Serializable;
 import java.util.List;
 
-import com.example.projeto.enums.TipoOferta;
+import com.example.projeto.enums.TipoDesconto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,42 +23,37 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name="ofertas")
-public class OfertaModel implements Serializable{
+@AllArgsConstructor
+@Table(name="descontos")
+public class DescontoModel implements Serializable{
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    
+    private Integer tipoDesconto;
 
-    private Integer tipoOferta;
+    @ManyToOne
+    @JoinColumn(name="oferta_id")
+    @JsonIgnore
+    private OfertaModel oferta;
 
     private double valor;
 
-    @ManyToOne
-    @JoinColumn(name="imovel_id")
-    @JsonIgnore
-    private ImovelModel imovelModel;
+    // datalimite expiração
+    private String dataLimite;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
-    private UserModel userModel;
     
-    @OneToMany(mappedBy = "oferta")
-    @JsonIgnore
-    private List<DescontoModel> descontos;
 
-
-    public TipoOferta getTipoOferta() {
-        return TipoOferta.toEnum(tipoOferta);
+    public TipoDesconto getTipoDesconto() {
+        return TipoDesconto.toEnum(tipoDesconto);
     }
 
-    public void setTipoUsuario(TipoOferta tipoOferta) {
-        this.tipoOferta = tipoOferta.getCodigo();
+    public void setTipoDesconto(TipoDesconto tipoDesconto) {
+        this.tipoDesconto = tipoDesconto.getCodigo();
     }
 
-       
     
 }

@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -52,7 +53,7 @@ public class ImovelService {
     }
 
     // public ImovelModel insert(ImovelModel model) {
-    //     return imovelRepository.save(model);
+    // return imovelRepository.save(model);
     // }
 
     public ImovelModel insert(ImovelModel model) {
@@ -89,7 +90,7 @@ public class ImovelService {
 
     public ImovelModel transformaParaObjeto(ImovelDTO imovelDTO) {
         UserModel userModel = userRepository.findById(imovelDTO.getUsuario_id()).orElseThrow();
-        
+
         return new ImovelModel(
                 imovelDTO.getId(),
                 imovelDTO.getDescricao(),
@@ -98,43 +99,41 @@ public class ImovelService {
                 userModel);
     }
 
-
-
+ 
     public String uploadImagem(MultipartFile imagem) {
-		try {
+        try {
 
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 
-			RestTemplate restTemplate = new RestTemplate();
-			restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+            // Preparando os dados para o envio
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-			// Preparando os dados para o envio
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("key", this.apiKey);
+            body.add("image", new ByteArrayResource(imagem.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return imagem.getOriginalFilename();
+                }
+            });
 
-			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-			body.add("key", this.apiKey);
-			body.add("image", new ByteArrayResource(imagem.getBytes()) {
-				@Override
-				public String getFilename() {
-					return imagem.getOriginalFilename();
-				}
-			});
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            // Fazendo a requisição
+            String imgBBUrl = "https://api.imgbb.com/1/upload";
+            ResponseEntity<String> response = restTemplate.postForEntity(imgBBUrl, requestEntity, String.class);
 
-			// Fazendo a requisição
-			String imgBBUrl = "https://api.imgbb.com/1/upload";
-			ResponseEntity<String> response = restTemplate.postForEntity(imgBBUrl, requestEntity, String.class);
+            String resposta = response.getBody();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(resposta);
+            return rootNode.path("data").path("url").asText();
 
-			String resposta = response.getBody();
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode rootNode = mapper.readTree(resposta);
-			return rootNode.path("data").path("url").asText();
-
-		} catch (Exception e) {
-			System.out.println(e.toString());
-			return null;
-		}
-	} 
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
 
 }

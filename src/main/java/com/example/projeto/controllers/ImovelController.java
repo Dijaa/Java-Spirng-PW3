@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,10 +47,10 @@ public class ImovelController {
 	// }
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<List<ImovelDTOResposta>> getAll() {
-		List<ImovelModel> list = service.getAll();
+	public ResponseEntity<List<DTOImovelSuper>> getAll() {
+			List<ImovelModel> list = service.getAll();
 
-		List<ImovelDTOResposta> listaDtos = list.stream().map(imovel -> new ImovelDTOResposta(imovel))
+		List<DTOImovelSuper> listaDtos = list.stream().map(imovel ->  DTOImovelSuper.transformaEmDTO(imovel))
 				.collect(Collectors.toList());
 
 		return ResponseEntity.status(HttpStatus.OK).body(listaDtos);
@@ -98,6 +99,12 @@ public class ImovelController {
 		// .body(descontos.stream().map(desconto ->
 		// desconto.getOferta().getImovelModel())
 		// .collect(Collectors.toList()));
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<Void> delete(@PathVariable Integer id) {
+		service.delete(id);
+		return ResponseEntity.ok().build();
 	}
 
 	@RequestMapping(method = RequestMethod.POST)

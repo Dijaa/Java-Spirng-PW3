@@ -6,6 +6,7 @@ import java.util.List;
 import com.example.projeto.enums.TipoOferta;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,7 +46,7 @@ public class OfertaModel implements Serializable{
     @JoinColumn(name = "usuario_id")
     private UserModel userModel;
     
-    @OneToMany(mappedBy = "oferta")
+    @OneToMany(mappedBy = "oferta", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<DescontoModel> descontos;
 

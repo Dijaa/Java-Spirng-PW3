@@ -2,6 +2,8 @@ package com.example.projeto.models;
 
 import java.io.Serializable;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -42,10 +44,10 @@ public class ImovelModel implements Serializable{
     @JoinColumn(name = "usuario_id")
     private UserModel userModel;
 
-    @OneToMany(mappedBy="imovelModel")
+    @OneToMany(mappedBy="imovelModel", cascade = CascadeType.ALL)
     private List<OfertaModel> ofertas;
 
-    @OneToMany(mappedBy="imovelModel")
+    @OneToMany(mappedBy="imovelModel", cascade = CascadeType.ALL)
     private List<ContratoModel> contratos;
 
 

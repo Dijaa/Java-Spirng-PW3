@@ -1,6 +1,7 @@
 package com.example.projeto.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -63,8 +64,14 @@ public class AuthController {
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
         var token = tokenService.generateToken((UserModel) auth.getPrincipal());
+        UserModel user = (UserModel) auth.getPrincipal();
+        
+        System.out.println("aaaaaaaa");
+        System.out.println(user.getId());
+        System.out.println("aaaaaaaa");
 
-        return ResponseEntity.ok(new LoginRespotaDTO(token));
+
+        return ResponseEntity.ok(new LoginRespotaDTO(token, user.getId()));
     }
 
     @PostMapping("/public/register")
